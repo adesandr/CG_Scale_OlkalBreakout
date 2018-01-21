@@ -1,2 +1,2 @@
 # CG_Scale
-All files that you need to build a F3x Balance CG
+All files you need to build a F3x Balance CG
