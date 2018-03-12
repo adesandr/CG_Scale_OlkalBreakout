@@ -19,7 +19,7 @@
  */
 
 /*--- Used to send debug on the serial monitor              ---*/
-#define CG_SCALE_DEBUG
+//#define CG_SCALE_DEBUG
 
 /*--- Delay for the Welcome Display                         ---*/
 #define CG_SCALE_DELAY_WELCOME 3000
@@ -203,7 +203,7 @@ void loop() {
     t1 = millis() + printInterval;
     float a = LoadCell_1.getData();
     float b = LoadCell_2.getData();
-    long weightAvr[3];
+    long weightAvr[2];
     float CGratio;
     long CG;
     weightAvr[0] = a * 100;
@@ -251,17 +251,40 @@ void loop() {
       }
       
       if (weightTot < -100) {
-        snprintf(toWeightLCD, 8, "Wt:Err.");
+        toWeightLCD[0] = 'W';
+        toWeightLCD[1] = 't';
+        toWeightLCD[2] = ':';
+        toWeightLCD[3] = 'E';
+        toWeightLCD[4] = 'r';
+        toWeightLCD[5] = 'r';
+        toWeightLCD[6] = '.';
+        toWeightLCD[7] ='\0';
       }
       else {
-        snprintf(toWeightLCD, 8, "Wt:%d%d%d%d", (weightTot / 100000), ((weightTot % 100000) / 10000),((weightTot % 10000) / 1000),((weightTot % 1000) / 100));
+        toWeightLCD[0] = 'W';
+        toWeightLCD[1] = 't';
+        toWeightLCD[2] = ':';
+        toWeightLCD[3] = (char)((weightTot / 100000)+48);
+        toWeightLCD[4] = (char)(((weightTot % 100000) / 10000) + 48);
+        toWeightLCD[5] = (char)(((weightTot % 10000) / 1000) + 48);
+        toWeightLCD[6] = (char)(((weightTot % 1000) / 100)+48);
+        toWeightLCD[7] ='\0'; 
       }
       if (CG != 0) {
-        snprintf(toCgLCD, 9,"CG:%d%d%d%.%d",(CG / 10000),((CG % 10000) / 1000),((CG % 1000) / 100),((CG % 100) / 10));
+        toCgLCD[0] = 'C';
+        toCgLCD[1] = 'G';
+        toCgLCD[2] = ':';
+        toCgLCD[3] = (char)((CG / 10000)+48);
+        toCgLCD[4] = (char)(((CG % 10000) / 1000)+48);
+        toCgLCD[5] = (char)(((CG % 1000) / 100)+48);
+        toCgLCD[6] = '.';
+        toCgLCD[7] = (char)(((CG % 100) / 10)+48);
+        toCgLCD[8] = '\0';
       }
       else {
-        snprintf(toCgLCD, 9, "       ");
+        toCgLCD[0] = '\0';
       }
+      
     /*--- Battery value display                     ---*/
     int batval = readBattVoltage(&bBatWarning);
     snprintf(toBatLCD,11,"Bat:%d.%d%d V", (batval / 1000),((batval % 1000) / 100),((batval % 100) / 10));
