@@ -19,7 +19,7 @@
  */
 
 /*--- Used to send debug on the serial monitor              ---*/
-#define CG_SCALE_DEBUG
+//#define CG_SCALE_DEBUG
 
 /*--- Delay for the Welcome Display                         ---*/
 #define CG_SCALE_DELAY_WELCOME 3000
@@ -62,7 +62,7 @@ Adafruit_SSD1306 display(OLED_RESET);
 byte ledPin = LED_BUILTIN;    // onboard led. Flash indicates that CG_SCALE is running.
 boolean ledState;
 byte batRefPin = A7;          // A4 in the original concept, but A4, A5 used on I2C, so we move to A7
-char toWeightLCD[8];
+char toWeightLCD[8];          // Three buffer used to manage the display
 char toCgLCD[9];
 char toBatLCD[11];
 boolean output;
@@ -74,11 +74,11 @@ const int printInterval = 500; // LCD/Serial refresh interval
 
 //*** configuration:
 //*** set dimensional calibration values:
-const long WingPegDist = 1193; //calibration value in 1/10mm, projected distance between wing support points, measure with calliper (old : 1198)
-const long LEstopperDist = 316; //calibration value 1/10mm, projected distance from front wing support point to leading edge (stopper pin), measure with calliper (old : 300)
+const long WingPegDist = 1214; //calibration value in 1/10mm, projected distance between wing support points, measure with calliper (old : 1198)
+const long LEstopperDist = 306; //calibration value 1/10mm, projected distance from front wing support point to leading edge (stopper pin), measure with calliper (old : 300)
 //*** set scale calibration values (best to have the battery connected when doing calibration):
-const float ldcell_1_calfactor = 1121.0; // user set calibration factor load cell front (float) old : 954
-const float ldcell_2_calfactor = 699.0; // user set calibration factor load cell rear (float) old : 799
+const float ldcell_1_calfactor = 897.0; // user set calibration factor load cell front (float) old : 954
+const float ldcell_2_calfactor = 745.0; // user set calibration factor load cell rear (float) old : 799
 //***
 const long stabilisingtime = 3000; // tare precision can be improved by adding a few seconds of stabilising time
 //***
@@ -203,7 +203,7 @@ void loop() {
     t1 = millis() + printInterval;
     float a = LoadCell_1.getData();
     float b = LoadCell_2.getData();
-    long weightAvr[3];
+    long weightAvr[2];
     float CGratio;
     long CG;
     weightAvr[0] = a * 100;
@@ -251,16 +251,38 @@ void loop() {
       }
       
       if (weightTot < -100) {
-        snprintf(toWeightLCD, 8, "Wt:Err.");
+        toWeightLCD[0] = 'W';
+        toWeightLCD[1] = 't';
+        toWeightLCD[2] = ':';
+        toWeightLCD[3] = 'E';
+        toWeightLCD[4] = 'r';
+        toWeightLCD[5] = 'r';
+        toWeightLCD[6] = '.';
+        toWeightLCD[7] ='\0';
       }
       else {
-        snprintf(toWeightLCD, 8, "Wt:%d%d%d%d", (weightTot / 100000), ((weightTot % 100000) / 10000),((weightTot % 10000) / 1000),((weightTot % 1000) / 100));
-      }
+        toWeightLCD[0] = 'W';
+        toWeightLCD[1] = 't';
+        toWeightLCD[2] = ':';
+        toWeightLCD[3] = (char)((weightTot / 100000)+48);
+        toWeightLCD[4] = (char)(((weightTot % 100000) / 10000) + 48);
+        toWeightLCD[5] = (char)(((weightTot % 10000) / 1000) + 48);
+        toWeightLCD[6] = (char)(((weightTot % 1000) / 100)+48);
+        toWeightLCD[7] ='\0';        
+       }
       if (CG != 0) {
-        snprintf(toCgLCD, 9,"CG:%d%d%d%.%d",(CG / 10000),((CG % 10000) / 1000),((CG % 1000) / 100),((CG % 100) / 10));
+        toCgLCD[0] = 'C';
+        toCgLCD[1] = 'G';
+        toCgLCD[2] = ':';
+        toCgLCD[3] = (char)((CG / 10000)+48);
+        toCgLCD[4] = (char)(((CG % 10000) / 1000)+48);
+        toCgLCD[5] = (char)(((CG % 1000) / 100)+48);
+        toCgLCD[6] = '.';
+        toCgLCD[7] = (char)(((CG % 100) / 10)+48);
+        toCgLCD[8] = '\0';
       }
       else {
-        snprintf(toCgLCD, 9, "       ");
+        toCgLCD[0] = '\0';
       }
 
     /*--- Weight and Cg OLED display                ---*/
@@ -291,7 +313,7 @@ void loop() {
       Serial.print(F(" LCD CG = "));
       Serial.print(toCgLCD);
       Serial.print(F(" LCD Batt = "));
-      Serial.println(toBatLCD);      
+      Serial.println(toBatLCD);  
     #endif
 
     } /* end if output to OLED */
