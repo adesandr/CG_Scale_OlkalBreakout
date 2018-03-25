@@ -153,17 +153,22 @@ void setup() {
  * 
  ******************************************************/
 int readBattVoltage(boolean *bWarn) { // read battery voltage
+
   long battvalue = 0;
+
+  /*--- Double read to increase the stability ---*/
   battvalue += analogRead(batRefPin);
   battvalue += analogRead(batRefPin);
+
+  /*--- Simple cross product and bride resistor divider value * 2 because we have done two analog read ---*/
   battvalue *= 4883L; // analog reading * (5.00V*1000000)/1024 (adjust value if VCC is not 5.0V)
   battvalue /= 640L; // this number comes from the resistor divider value ((R2/(R1+R2))*1000)/noof analogreadings (adjust value if required)
-  //Serial.println(battvalue);
 
-  /*--- Warning if battvalue < 6,5 V. Old Value 7,5 V ----*/
-  if (battvalue < 6500) { 
+  /*--- Warning if battvalue < 5,5 V. Old Value 7,5 V ----*/
+  if (battvalue < 5500) { 
     *bWarn = TRUE;
   }
+
   return battvalue;
 } /* end readBattVoltage() */
 
@@ -298,7 +303,7 @@ void loop() {
 
     /*--- Battery value display                     ---*/
     int batval = readBattVoltage(&bBatWarning);
-    snprintf(toBatLCD,11,"Bat:%d.%d%d V", (batval / 1000),((batval % 1000) / 100),((batval % 100) / 10));
+    snprintf(toBatLCD,11,"Bat:%d.%d%d V",(batval / 1000),((batval % 1000) / 100),((batval % 100) / 10));
     display.setTextSize(2);
     if(bBatWarning)
       ledState ? display.setTextColor(BLACK, WHITE) : display.setTextColor(WHITE);
