@@ -74,11 +74,11 @@ const int printInterval = 500; // LCD/Serial refresh interval
 
 //*** configuration:
 //*** set dimensional calibration values:
-const long WingPegDist = 1214; //calibration value in 1/10mm, projected distance between wing support points, measure with calliper (old : 1198)
-const long LEstopperDist = 306; //calibration value 1/10mm, projected distance from front wing support point to leading edge (stopper pin), measure with calliper (old : 300)
+const long WingPegDist = 1200; //calibration value in 1/10mm, projected distance between wing support points, measure with calliper (old : 1198)
+const long LEstopperDist = 324; //calibration value 1/10mm, projected distance from front wing support point to leading edge (stopper pin), measure with calliper (old : 300)
 //*** set scale calibration values (best to have the battery connected when doing calibration):
-const float ldcell_1_calfactor = 897.0; // user set calibration factor load cell front (float) old : 954
-const float ldcell_2_calfactor = 745.0; // user set calibration factor load cell rear (float) old : 799
+const float ldcell_1_calfactor = 934.0; // user set calibration factor load cell front (float) old : 954
+const float ldcell_2_calfactor = 777.0; // user set calibration factor load cell rear (float) old : 799
 //***
 const long stabilisingtime = 3000; // tare precision can be improved by adding a few seconds of stabilising time
 //***
@@ -159,7 +159,9 @@ int readBattVoltage(boolean *bWarn) { // read battery voltage
   battvalue *= 4883L; // analog reading * (5.00V*1000000)/1024 (adjust value if VCC is not 5.0V)
   battvalue /= 640L; // this number comes from the resistor divider value ((R2/(R1+R2))*1000)/noof analogreadings (adjust value if required)
   //Serial.println(battvalue);
-  if (battvalue < 7500) { //
+
+  /*--- Warning if battvalue < 6,5 V. Old Value 7,5 V ----*/
+  if (battvalue < 6500) { 
     *bWarn = TRUE;
   }
   return battvalue;
